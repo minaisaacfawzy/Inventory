@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/recycler_item_parent"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <android.support.constraint.Guideline
+        android:id="@+id/left_guideline"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_begin="16dp" />
+
+    <android.support.constraint.Guideline
+        android:id="@+id/right_guideline"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_end="16dp" />
+
+    <TextView
+        android:id="@+id/txtv_product_name"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="TextView"
+        android:textAppearance="@style/TextAppearance.AppCompat.Large"
+        app:layout_constraintStart_toStartOf="@+id/left_guideline"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <Button
+        android:id="@+id/btn_sell"
+        android:layout_width="@dimen/sell_button_width"
+        android:layout_height="50dp"
+        android:text="@string/btn_sell"
+        android:textAllCaps="false"
+        android:textStyle="normal"
+        app:layout_constraintBottom_toBottomOf="@+id/txtv_quantity"
+        app:layout_constraintStart_toStartOf="@+id/guideline_btn"
+        app:layout_constraintTop_toTopOf="@+id/txtv_quantity" />
+
+    <TextView
+        android:id="@+id/txtv_quantity"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="8dp"
+        android:layout_marginStart="8dp"
+        android:text="TextView"
+        app:layout_constraintBottom_toBottomOf="@+id/txtv_quantity_title"
+        app:layout_constraintStart_toEndOf="@+id/txtv_quantity_title"
+        app:layout_constraintTop_toTopOf="@+id/txtv_quantity_title" />
+
+    <TextView
+        android:id="@+id/txtv_price"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="8dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:text="TextView"
+        app:layout_constraintStart_toEndOf="@+id/txtv_price_title"
+        app:layout_constraintTop_toBottomOf="@+id/txtv_product_name" />
+
+    <TextView
+        android:id="@+id/txtv_quantity_title"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="@string/quantity_txtv"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toBottomOf="@+id/txtv_price"
+        app:layout_constraintStart_toStartOf="@+id/guidline_quantity"
+        app:layout_constraintTop_toTopOf="@+id/txtv_price" />
+
+    <TextView
+        android:id="@+id/txtv_price_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/price_txtv"
+        android:textStyle="bold"
+        app:layout_constraintStart_toStartOf="@+id/left_guideline"
+        app:layout_constraintTop_toTopOf="@+id/txtv_price" />
+
+    <android.support.constraint.Guideline
+        android:id="@+id/guidline_quantity"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.33" />
+
+    <android.support.constraint.Guideline
+        android:id="@+id/guideline_btn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.67" />
+
+</android.support.constraint.ConstraintLayout>

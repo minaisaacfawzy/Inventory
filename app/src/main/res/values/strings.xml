@@ -1,3 +1,6 @@
 <resources>
     <string name="app_name">Inventory</string>
+    <string name="btn_sell">Sell</string>
+    <string name="quantity_txtv">Quantity:</string>
+    <string name="price_txtv">Price:</string>
 </resources>
