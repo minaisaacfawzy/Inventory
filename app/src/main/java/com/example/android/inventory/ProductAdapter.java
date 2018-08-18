@@ -49,4 +49,8 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductViewHolder> {
     public int getItemCount() {
         return products.size();
     }
+
+    public void clearData(){
+        products.clear();
+    }
 }

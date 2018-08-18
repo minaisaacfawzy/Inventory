@@ -8,6 +8,7 @@ public class Product {
     private int mQuantity;
     private Bitmap mPicture;
     private String mSupplier;
+    private String mCategory;
 
     public Product(String mName, String mPrice, int mQuantity) {
         this.mName = mName;
@@ -15,12 +16,13 @@ public class Product {
         this.mQuantity = mQuantity;
     }
 
-    public Product(String name, String price, int quantity, Bitmap picture, String supplier) {
+    public Product(String name, String price, int quantity, Bitmap picture, String supplier,String category) {
         this.mName = name;
         this.mPrice = price;
         this.mQuantity = quantity;
         this.mPicture = picture;
         this.mSupplier = supplier;
+        this.mCategory = category;
     }
 
     public String getmName() {
