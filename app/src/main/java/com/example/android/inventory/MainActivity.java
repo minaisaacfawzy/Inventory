@@ -3,6 +3,7 @@ package com.example.android.inventory;
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.net.Uri;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -53,39 +54,29 @@ public class MainActivity extends AppCompatActivity {
 
     }
     private void insertProduct(){
-        SQLiteDatabase db = dbHelper.getWritableDatabase();
+
         ContentValues values = new ContentValues();
         values.put(ProductEntry.COLUMN_PRODUCT_NAME,"Pampers");
         values.put(ProductEntry.COLUMN_PRODUCT_PRICE,"100");
         values.put(ProductEntry.COLUMN_PRODUCT_QUANTITY,18);
         values.put(ProductEntry.COLUMN_RRODUCT_CATEGORY, categories.HEALTH_CARE.name());
+        Uri newUri = getContentResolver().insert(ProductEntry.CONTENT_URI,values);
 
-        long newRowId = db.insert(ProductEntry.TABLE_NAME,null,values);
 
     }
 
     private void displayDatabaseInfo(){
         productAdapter.clearData();
-        SQLiteDatabase db = dbHelper.getReadableDatabase();
-
-        String[] projection = {
+                String[] projection = {
                 ProductEntry._ID,
                 ProductEntry.COLUMN_PRODUCT_NAME,
                 ProductEntry.COLUMN_PRODUCT_PRICE,
                 ProductEntry.COLUMN_PRODUCT_QUANTITY,
                 ProductEntry.COLUMN_RRODUCT_CATEGORY,
         };
-
-        Cursor cursor = db.query(
-                ProductEntry.TABLE_NAME,
-                projection,
-                null,
-                null,
-                null,
-                null,
-                null
-        );
-
+        Cursor cursor =
+        getContentResolver().query(ProductEntry.CONTENT_URI,
+                projection,null,null,null);
         try {
 
             int idColumnIndex = cursor.getColumnIndex(ProductEntry._ID);
@@ -108,6 +99,6 @@ public class MainActivity extends AppCompatActivity {
         }finally {
             cursor.close();
         }
-        productAdapter.notifyDataSetChanged();
+                productAdapter.notifyDataSetChanged();
     }
 }
