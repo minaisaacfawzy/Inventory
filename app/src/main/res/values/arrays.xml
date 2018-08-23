@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="array_category_options">
+        <item>@string/category_Miscellaneous</item>
+        <item>@string/category_Beverages</item>
+        <item>@string/category_Diary</item>
+        <item>@string/category_Poultry</item>
+        <item>@string/category_fresh_food</item>
+        <item>@string/category_Frozen</item>
+    </string-array>
+</resources>

@@ -3,4 +3,17 @@
     <string name="btn_sell">Sell</string>
     <string name="quantity_txtv">Quantity:</string>
     <string name="price_txtv">Price:</string>
+    <string name="Supplier_txtv">Supplier:</string>
+
+    <string name="Category_txtv">Category:</string>
+    <string name="category_fresh_food">Fresh Food</string>
+    <string name="category_Frozen">Frozen</string>
+    <string name="category_Diary">Diary Products</string>
+    <string name="category_Poultry">Poultry</string>
+    <string name="category_Beverages">Beverages</string>
+    <string name="category_Miscellaneous">Miscellaneous</string>
+
+    <string name="editor_insert_product_failed">Insertion failed</string>
+    <string name="editor_insert_product_successful">Insertion succeeded</string>
+    <string name="action_save">Save</string>
 </resources>

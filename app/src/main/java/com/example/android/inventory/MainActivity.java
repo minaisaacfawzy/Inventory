@@ -1,6 +1,7 @@
 package com.example.android.inventory;
 
 import android.content.ContentValues;
+import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
@@ -15,7 +16,7 @@ import android.view.View;
 import com.example.android.inventory.data.ProductContract;
 import com.example.android.inventory.data.ProductContract.ProductEntry;
 import com.example.android.inventory.data.ProductDbHelper;
-import com.example.android.inventory.data.categories;
+
 
 import java.util.ArrayList;
 import java.util.List;
@@ -46,20 +47,30 @@ public class MainActivity extends AppCompatActivity {
         floatingActionButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                insertProduct();
-                displayDatabaseInfo();
+//                insertProduct();
+//                displayDatabaseInfo();
+                Intent intent = new Intent(MainActivity.this,EditorActivity.class);
+                startActivity(intent);
             }
         });
 
 
     }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        displayDatabaseInfo();
+
+    }
+
     private void insertProduct(){
 
         ContentValues values = new ContentValues();
         values.put(ProductEntry.COLUMN_PRODUCT_NAME,"Pampers");
         values.put(ProductEntry.COLUMN_PRODUCT_PRICE,"100");
         values.put(ProductEntry.COLUMN_PRODUCT_QUANTITY,18);
-        values.put(ProductEntry.COLUMN_RRODUCT_CATEGORY, categories.HEALTH_CARE.name());
+
         Uri newUri = getContentResolver().insert(ProductEntry.CONTENT_URI,values);
 
 
