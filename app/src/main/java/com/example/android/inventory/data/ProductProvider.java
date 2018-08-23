@@ -9,6 +9,10 @@ import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.text.TextUtils;
+import android.widget.Switch;
+
+import com.example.android.inventory.data.ProductContract.ProductEntry;
 
 /**
  * {@link ContentProvider} for inventory app.
@@ -110,7 +114,16 @@ public class ProductProvider extends ContentProvider {
     @Nullable
     @Override
     public String getType(@NonNull Uri uri) {
-        return null;
+        int match = sUriMatcher.match(uri);
+        switch (match){
+            case PRODUCTS:
+                return ProductEntry.CONTENT_LIST_TYPE;
+            case PRODUCT_ID:
+                return ProductEntry.CONTENT_ITEM_TYPE;
+            default:
+                throw new IllegalStateException("Unknown URI " + uri + " with match " + match);
+        }
+
     }
 
     @Nullable
@@ -127,6 +140,20 @@ public class ProductProvider extends ContentProvider {
 
     private Uri insertProduct(Uri uri, ContentValues values) {
         SQLiteDatabase db = mDbHelper.getWritableDatabase();
+
+        String name = values.getAsString(ProductEntry.COLUMN_PRODUCT_NAME);
+        if(name == null)
+            throw new IllegalArgumentException("Product requires a name");
+
+        String price = values.getAsString(ProductEntry.COLUMN_PRODUCT_PRICE);
+        if(name == null )
+            throw new IllegalArgumentException("Product requires a price");
+
+        int quantity = values.getAsInteger(ProductEntry.COLUMN_PRODUCT_PRICE);
+        if(quantity < 0)
+            throw new IllegalArgumentException("quantity should be greater than zero");
+
+
         long id = db.insert(ProductContract.ProductEntry.TABLE_NAME,null,values);
         if(id == -1)
             return  null;
@@ -135,11 +162,69 @@ public class ProductProvider extends ContentProvider {
 
     @Override
     public int delete(@NonNull Uri uri, @Nullable String selection, @Nullable String[] selectionArgs) {
-        return 0;
+        SQLiteDatabase database = mDbHelper.getWritableDatabase();
+        int match = sUriMatcher.match(uri);
+        switch(match){
+            case PRODUCTS:
+                return database.delete(ProductEntry.TABLE_NAME,selection,selectionArgs);
+            case PRODUCT_ID:
+                long id = ContentUris.parseId(uri);
+                selection = ProductEntry._ID + "=?";
+                selectionArgs = new String[]{String.valueOf(id)};
+                return database.delete(ProductEntry.TABLE_NAME,selection,selectionArgs);
+            default:
+                throw  new IllegalArgumentException("Deletion is not supported for " + uri);
+        }
+
     }
 
     @Override
     public int update(@NonNull Uri uri, @Nullable ContentValues values, @Nullable String selection, @Nullable String[] selectionArgs) {
-        return 0;
+        int match = sUriMatcher.match(uri);
+        switch (match){
+            case PRODUCTS:
+                return updateProduct(uri,values,selection,selectionArgs);
+            case PRODUCT_ID:
+                selection = ProductEntry._ID + "=?";
+                long id = ContentUris.parseId(uri);
+                selectionArgs = new String[]{String.valueOf(id)};
+                return updateProduct(uri,values,selection,selectionArgs);
+            default:
+                throw new IllegalArgumentException("Update is not supported for " + uri);
+        }
+
+    }
+
+    private int updateProduct(Uri uri, ContentValues values, String selection, String[] selectionArgs) {
+        if(values.containsKey(ProductEntry.COLUMN_PRODUCT_NAME)){
+            String name = values.getAsString(ProductEntry.COLUMN_PRODUCT_NAME);
+            if(name == null)
+                throw new IllegalArgumentException("Product name is not valid");
+        }
+
+        if(values.containsKey(ProductEntry.COLUMN_PRODUCT_PRICE)){
+            String price = values.getAsString(ProductEntry.COLUMN_PRODUCT_PRICE);
+            if(price == null)
+                throw new IllegalArgumentException("Product price is not valid");
+        }
+
+        if(values.containsKey(ProductEntry.COLUMN_PRODUCT_QUANTITY)){
+            int quantity = values.getAsInteger(ProductEntry.COLUMN_PRODUCT_QUANTITY);
+            if(quantity < 0)
+                throw new IllegalArgumentException("Product quantity is not valid");
+        }
+
+        if(values.containsKey(ProductEntry.COLUMN_PRODUCT_SUPPLIER)){
+            String supplier = values.getAsString(ProductEntry.COLUMN_PRODUCT_SUPPLIER);
+            if(supplier == null)
+                throw new IllegalArgumentException("Product supplier is not valid");
+        }
+
+        if(values.size() == 0)
+            return 0;
+
+        SQLiteDatabase database = mDbHelper.getWritableDatabase();
+
+        return database.update(ProductEntry.TABLE_NAME,values,selection,selectionArgs);
     }
 }

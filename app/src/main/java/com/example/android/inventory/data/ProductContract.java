@@ -89,19 +89,12 @@ public class ProductContract {
          *
          * Type: BLOB
          */
-        public final static String COLUMN_RRODUCT_PICTURE = "PICTURE";
+        public final static String COLUMN_RRODUCT_PICTURE = "picture";
 
-        public final static String COLUMN_RRODUCT_CATEGORY = "CATEGORY";
+        public final static String COLUMN_RRODUCT_CATEGORY = "category";
+        public final static String COLUMN_PRODUCT_SUPPLIER = "supplier";
 
 
-
-        public static boolean isValidCategory(String category) {
-          for(categories s : categories.values()){
-              if(s.name().equals(category))
-                  return true;
-          }
-          return false;
-        }
 
     }
 }
