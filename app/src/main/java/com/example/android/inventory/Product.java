@@ -1,7 +1,8 @@
 package com.example.android.inventory;
 
+import android.database.Cursor;
 import android.graphics.Bitmap;
-
+import com.example.android.inventory.data.ProductContract.ProductEntry;
 public class Product {
     private String mName;
     private String mPrice;
@@ -63,5 +64,34 @@ public class Product {
 
     public void setmSupplier(String mSupplier) {
         this.mSupplier = mSupplier;
+    }
+
+    public static Product fromCursor(Cursor cursor){
+        Product product;
+        String currentName = null,currentPrice = null;
+        int currentQuantity = 0;
+        try {
+
+            int idColumnIndex = cursor.getColumnIndex(ProductEntry._ID);
+            int nameColumnIndex = cursor.getColumnIndex(ProductEntry.COLUMN_PRODUCT_NAME);
+            int priceColumnIndex = cursor.getColumnIndex(ProductEntry.COLUMN_PRODUCT_PRICE);
+            int quantityColumnIndex = cursor.getColumnIndex(ProductEntry.COLUMN_PRODUCT_QUANTITY);
+            int categoryColumnIndex = cursor.getColumnIndex(ProductEntry.COLUMN_RRODUCT_CATEGORY);
+
+            while (cursor.moveToNext()) {
+
+                int currentID = cursor.getInt(idColumnIndex);
+                currentName = cursor.getString(nameColumnIndex);
+                currentPrice = cursor.getString(priceColumnIndex);
+                currentQuantity = cursor.getInt(quantityColumnIndex);
+                String currentCategory = cursor.getString(categoryColumnIndex);
+
+
+            }
+        }finally {
+            cursor.close();
+        }
+        product = new Product(currentName, currentPrice, currentQuantity);
+        return product;
     }
 }
