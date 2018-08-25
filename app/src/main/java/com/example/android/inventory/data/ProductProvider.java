@@ -108,6 +108,7 @@ public class ProductProvider extends ContentProvider {
             default:
                 throw new IllegalArgumentException("Cannot query unknown URI " + uri);
         }
+        cursor.setNotificationUri(getContext().getContentResolver(),uri);
         return cursor;
     }
 
@@ -157,6 +158,7 @@ public class ProductProvider extends ContentProvider {
         long id = db.insert(ProductContract.ProductEntry.TABLE_NAME,null,values);
         if(id == -1)
             return  null;
+        getContext().getContentResolver().notifyChange(uri, null);
         return ContentUris.withAppendedId(uri,id);
     }
 
@@ -164,17 +166,24 @@ public class ProductProvider extends ContentProvider {
     public int delete(@NonNull Uri uri, @Nullable String selection, @Nullable String[] selectionArgs) {
         SQLiteDatabase database = mDbHelper.getWritableDatabase();
         int match = sUriMatcher.match(uri);
+        int rowsDeleted;
         switch(match){
             case PRODUCTS:
-                return database.delete(ProductEntry.TABLE_NAME,selection,selectionArgs);
+                rowsDeleted = database.delete(ProductEntry.TABLE_NAME,selection,selectionArgs);
+                break;
             case PRODUCT_ID:
                 long id = ContentUris.parseId(uri);
                 selection = ProductEntry._ID + "=?";
                 selectionArgs = new String[]{String.valueOf(id)};
-                return database.delete(ProductEntry.TABLE_NAME,selection,selectionArgs);
+                rowsDeleted = database.delete(ProductEntry.TABLE_NAME,selection,selectionArgs);
+                break;
             default:
                 throw  new IllegalArgumentException("Deletion is not supported for " + uri);
         }
+        if(rowsDeleted != 0)
+            getContext().getContentResolver().notifyChange(uri,null);
+
+        return rowsDeleted;
 
     }
 
@@ -225,6 +234,11 @@ public class ProductProvider extends ContentProvider {
 
         SQLiteDatabase database = mDbHelper.getWritableDatabase();
 
-        return database.update(ProductEntry.TABLE_NAME,values,selection,selectionArgs);
+        int rowsUpdated = database.update(ProductEntry.TABLE_NAME,values,selection,selectionArgs);
+
+        if(rowsUpdated != 0)
+            getContext().getContentResolver().notifyChange(uri,null);
+
+        return rowsUpdated;
     }
 }
