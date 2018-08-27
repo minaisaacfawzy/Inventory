@@ -1,6 +1,11 @@
 package com.example.android.inventory;
 
+import android.app.LoaderManager;
+import android.content.ContentUris;
 import android.content.ContentValues;
+import android.content.CursorLoader;
+import android.content.Loader;
+import android.database.Cursor;
 import android.net.Uri;
 import android.nfc.Tag;
 import android.os.Bundle;
@@ -19,25 +24,36 @@ import android.widget.Spinner;
 import android.widget.Toast;
 
 import com.example.android.inventory.data.ProductContract;
+import com.example.android.inventory.data.ProductContract.ProductEntry;
 
 
-public class EditorActivity extends AppCompatActivity {
+public class EditorActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor> {
     private EditText etxtName,etxtPrice,etxtQuantity,etxtSupplier;
     private Spinner spinnerCategory;
     private String category;
     private static final String TAG = "EditorActivity";
+    private static final int PET_LOADER = 0;
+    Uri uri;
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.editor_activity);
-
         etxtName = (EditText) findViewById(R.id.etxt_name);
         etxtPrice = (EditText) findViewById(R.id.etxt_price);
         etxtQuantity = (EditText) findViewById(R.id.etxt_quanitity);
         etxtSupplier = (EditText) findViewById(R.id.etxt_supplier);
         spinnerCategory = (Spinner) findViewById(R.id.spinner_category);
 
+
         setupSpinner();
+        uri =  getIntent().getData();
+        if(uri == null){
+            this.setTitle(getResources().getString(R.string.editor_activity_title_add));
+        }else {
+            this.setTitle(getResources().getString(R.string.editor_activity_title_edit));
+            getLoaderManager().initLoader(0,null,this);
+        }
+
 
     }
 
@@ -126,5 +142,72 @@ public class EditorActivity extends AppCompatActivity {
     }
 
 
+    @Override
+    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+        String[] projection = {
+                ProductEntry._ID,
+                ProductEntry.COLUMN_PRODUCT_NAME,
+                ProductEntry.COLUMN_PRODUCT_PRICE,
+                ProductEntry.COLUMN_PRODUCT_QUANTITY,
+                ProductEntry.COLUMN_RRODUCT_CATEGORY,
+                ProductEntry.COLUMN_PRODUCT_SUPPLIER
+        };
 
+        return new CursorLoader(this,
+                uri,
+                projection,
+                null,
+                null,
+                null
+                );
+    }
+
+    @Override
+    public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
+        String currentName,currentPrice,currentCategory,currentSupplier ;
+        int currentQuantity,id;
+
+        if(cursor.moveToFirst()) {
+            int idColumnIndex = cursor.getColumnIndex(ProductEntry._ID);
+            int nameColumnIndex = cursor.getColumnIndex(ProductEntry.COLUMN_PRODUCT_NAME);
+            int priceColumnIndex = cursor.getColumnIndex(ProductEntry.COLUMN_PRODUCT_PRICE);
+            int quantityColumnIndex = cursor.getColumnIndex(ProductEntry.COLUMN_PRODUCT_QUANTITY);
+            int categoryColumnIndex = cursor.getColumnIndex(ProductEntry.COLUMN_RRODUCT_CATEGORY);
+            int supplierColumnIndex = cursor.getColumnIndex(ProductEntry.COLUMN_PRODUCT_SUPPLIER);
+
+
+            id = cursor.getInt(idColumnIndex);
+            currentName = cursor.getString(nameColumnIndex);
+            currentPrice = cursor.getString(priceColumnIndex);
+            currentQuantity = cursor.getInt(quantityColumnIndex);
+            currentCategory = cursor.getString(categoryColumnIndex);
+            currentSupplier = cursor.getString(supplierColumnIndex);
+            Log.i(TAG, "populateData: " + id + " " + currentName + currentPrice + currentCategory + " " + currentSupplier);
+
+            etxtName.setText(currentName);
+            etxtPrice.setText(String.valueOf(currentPrice));
+            etxtQuantity.setText(String.valueOf(currentQuantity));
+            int index = getCategoreyNum(currentCategory);
+            if(index >= 0)
+                spinnerCategory.setSelection(index);
+            else
+                spinnerCategory.setSelection(0);
+            etxtSupplier.setText(currentSupplier);
+        }
+
+    }
+
+    private int getCategoreyNum(String category){
+        String[] categories = getResources().getStringArray(R.array.array_category_options);
+        for(int i = 0,n = categories.length; i < n; i++){
+            if(categories[i].equals(category))
+                return i;
+        }
+        return -1;
+    }
+
+    @Override
+    public void onLoaderReset(Loader<Cursor> loader) {
+
+    }
 }

@@ -16,4 +16,6 @@
     <string name="editor_insert_product_failed">Insertion failed</string>
     <string name="editor_insert_product_successful">Insertion succeeded</string>
     <string name="action_save">Save</string>
+    <string name="editor_activity_title_add">Add a Product</string>
+    <string name="editor_activity_title_edit">Edit Product</string>
 </resources>

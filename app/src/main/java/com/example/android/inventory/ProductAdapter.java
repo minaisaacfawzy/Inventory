@@ -1,6 +1,7 @@
 package com.example.android.inventory;
 
 import android.content.Context;
+import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.support.annotation.NonNull;
@@ -40,8 +41,8 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductViewHolder> {
 
         cursor.moveToPosition(position);
         int id = 0;
-        String currentName = null,currentPrice = null,currentCategory = null;
-        int currentQuantity = 0;
+        String currentName,currentPrice,currentCategory ;
+        int currentQuantity;
 
 
             int idColumnIndex = cursor.getColumnIndex(ProductEntry._ID);
@@ -57,6 +58,7 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductViewHolder> {
              currentQuantity = cursor.getInt(quantityColumnIndex);
              currentCategory = cursor.getString(categoryColumnIndex);
 
+            holder.setTagId(id);
             holder.txtvName.setText(currentName);
             holder.txtvPrice.setText(currentPrice);
             holder.txtvQuantity.setText(String.valueOf(currentQuantity));
@@ -64,6 +66,17 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductViewHolder> {
                 @Override
                 public void onClick(View v) {
 
+
+                }
+            });
+            holder.parent.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Intent intent = new Intent(context,EditorActivity.class);
+                    int id = holder.getTagId();
+                    Uri uri = Uri.withAppendedPath(ProductEntry.CONTENT_URI,String.valueOf(id));
+                    intent.setData(uri);
+                    context.startActivity(intent);
 
                 }
             });
