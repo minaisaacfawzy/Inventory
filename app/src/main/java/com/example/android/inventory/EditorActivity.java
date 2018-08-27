@@ -1,9 +1,12 @@
 package com.example.android.inventory;
 
+import android.app.AlertDialog;
+import android.app.Dialog;
 import android.app.LoaderManager;
 import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.CursorLoader;
+import android.content.DialogInterface;
 import android.content.Loader;
 import android.database.Cursor;
 import android.net.Uri;
@@ -16,6 +19,7 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -33,6 +37,14 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
     private String category;
     private static final String TAG = "EditorActivity";
     private static final int PET_LOADER = 0;
+    private boolean productChanged = false;
+    private View.OnTouchListener mTouchListener = new View.OnTouchListener() {
+        @Override
+        public boolean onTouch(View view, MotionEvent motionEvent) {
+            productChanged = true;
+            return false;
+        }
+    };
     Uri uri;
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -44,6 +56,11 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
         etxtSupplier = (EditText) findViewById(R.id.etxt_supplier);
         spinnerCategory = (Spinner) findViewById(R.id.spinner_category);
 
+        etxtName.setOnTouchListener(mTouchListener);
+        etxtQuantity.setOnTouchListener(mTouchListener);
+        etxtPrice.setOnTouchListener(mTouchListener);
+        etxtSupplier.setOnTouchListener(mTouchListener);
+        spinnerCategory.setOnTouchListener(mTouchListener);
 
         setupSpinner();
         //uri is null in case of adding new product
@@ -72,9 +89,28 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
                 saveProduct();
                 finish();
                 return true;
-            case R.id.homeAsUp:
-                NavUtils.navigateUpFromSameTask(this);
+            case android.R.id.home:
+                if (!productChanged) {
+                    NavUtils.navigateUpFromSameTask(EditorActivity.this);
+                    return true;
+                }
+
+                // Otherwise if there are unsaved changes, setup a dialog to warn the user.
+                // Create a click listener to handle the user confirming that
+                // changes should be discarded.
+                DialogInterface.OnClickListener discardButtonClickListener =
+                        new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                // User clicked "Discard" button, navigate to parent activity.
+                                NavUtils.navigateUpFromSameTask(EditorActivity.this);
+                            }
+                        };
+
+                // Show a dialog that notifies the user they have unsaved changes
+                showUnsavedChangesDialog(discardButtonClickListener);
                 return true;
+
         }
         return super.onOptionsItemSelected(item);
     }
@@ -120,13 +156,20 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
     }
 
     private void saveProduct(){
+        String name = etxtName.getText().toString().trim();
+        String price = etxtPrice.getText().toString().trim();
+        String quantity = etxtQuantity.getText().toString().trim();
+        String supplier = etxtSupplier.getText().toString().trim();
+
+        if(uri == null && TextUtils.isEmpty(name)&& TextUtils.isEmpty(price)
+                && TextUtils.isEmpty(String.valueOf(quantity))&& TextUtils.isEmpty(supplier))
+            return;
         ContentValues values = new ContentValues();
-        values.put(ProductContract.ProductEntry.COLUMN_PRODUCT_NAME,etxtName.getText().toString().trim());
-        values.put(ProductContract.ProductEntry.COLUMN_PRODUCT_PRICE,etxtPrice.getText().toString().trim());
-        values.put(ProductContract.ProductEntry.COLUMN_PRODUCT_QUANTITY,
-                Integer.parseInt(etxtQuantity.getText().toString().trim()));
+        values.put(ProductContract.ProductEntry.COLUMN_PRODUCT_NAME,name);
+        values.put(ProductContract.ProductEntry.COLUMN_PRODUCT_PRICE,price);
+        values.put(ProductContract.ProductEntry.COLUMN_PRODUCT_QUANTITY,Integer.parseInt(quantity));
         values.put(ProductContract.ProductEntry.COLUMN_RRODUCT_CATEGORY,category);
-        values.put(ProductContract.ProductEntry.COLUMN_PRODUCT_SUPPLIER,etxtSupplier.getText().toString().trim());
+        values.put(ProductContract.ProductEntry.COLUMN_PRODUCT_SUPPLIER,supplier);
         Log.i(TAG, "saveProduct: " + values.toString());
         if(uri == null) {
             Uri newUri = getContentResolver().insert(ProductContract.ProductEntry.CONTENT_URI, values);
@@ -223,5 +266,37 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
 
+    }
+
+    @Override
+    public void onBackPressed() {
+        if(!productChanged) {
+            super.onBackPressed();
+            return;
+        }
+        DialogInterface.OnClickListener onClickListener  = new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                finish();
+            }
+        };
+        showUnsavedChangesDialog(onClickListener);
+
+    }
+
+    private void showUnsavedChangesDialog(DialogInterface.OnClickListener discardButtonClickListener){
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage(R.string.unsaved_changes_dialog_msg);
+        builder.setPositiveButton(R.string.discard,discardButtonClickListener);
+        builder.setNegativeButton(R.string.keep_editing, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                if (dialog != null) {
+                    dialog.dismiss();
+                }
+            }
+        });
+        AlertDialog dialog = builder.create();
+        dialog.show();
     }
 }
