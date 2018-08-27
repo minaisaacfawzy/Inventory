@@ -67,6 +67,7 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
         uri =  getIntent().getData();
         if(uri == null){
             this.setTitle(getResources().getString(R.string.editor_activity_title_add));
+            invalidateOptionsMenu();
         }else {
             this.setTitle(getResources().getString(R.string.editor_activity_title_edit));
             getLoaderManager().initLoader(0,null,this);
@@ -78,6 +79,16 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_editor,menu);
+        return true;
+    }
+
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        super.onPrepareOptionsMenu(menu);
+        if (uri == null) {
+            MenuItem menuItem = menu.findItem(R.id.action_delete);
+            menuItem.setVisible(false);
+        }
         return true;
     }
 
@@ -110,6 +121,8 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
                 // Show a dialog that notifies the user they have unsaved changes
                 showUnsavedChangesDialog(discardButtonClickListener);
                 return true;
+            case R.id.action_delete:
+                showDeleteConfirmationDialog();
 
         }
         return super.onOptionsItemSelected(item);
@@ -298,5 +311,44 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
         });
         AlertDialog dialog = builder.create();
         dialog.show();
+    }
+
+    private void showDeleteConfirmationDialog(){
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage(R.string.delete_dialog_msg);
+        builder.setNegativeButton(R.string.discard, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                if(dialog != null)
+                    dialog.dismiss();
+            }
+        });
+        builder.setPositiveButton(R.string.delete, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                deleteProduct();
+            }
+        });
+        AlertDialog dialog = builder.create();
+        dialog.show();
+    }
+
+    private void deleteProduct() {
+
+        if(uri != null) {
+            int rowsDeleted = getContentResolver().delete(uri, null, null);
+
+            // Show a toast message depending on whether or not the delete was successful.
+            if (rowsDeleted == 0) {
+                // If no rows were deleted, then there was an error with the delete.
+                Toast.makeText(this, getString(R.string.editor_delete_product_failed),
+                        Toast.LENGTH_SHORT).show();
+            } else {
+                // Otherwise, the delete was successful and we can display a toast.
+                Toast.makeText(this, getString(R.string.editor_delete_product_successful),
+                        Toast.LENGTH_SHORT).show();
+            }
+        }
+        finish();
     }
 }
