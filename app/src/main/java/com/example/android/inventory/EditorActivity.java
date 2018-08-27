@@ -46,6 +46,7 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
 
 
         setupSpinner();
+        //uri is null in case of adding new product
         uri =  getIntent().getData();
         if(uri == null){
             this.setTitle(getResources().getString(R.string.editor_activity_title_add));
@@ -127,17 +128,30 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
         values.put(ProductContract.ProductEntry.COLUMN_RRODUCT_CATEGORY,category);
         values.put(ProductContract.ProductEntry.COLUMN_PRODUCT_SUPPLIER,etxtSupplier.getText().toString().trim());
         Log.i(TAG, "saveProduct: " + values.toString());
+        if(uri == null) {
+            Uri newUri = getContentResolver().insert(ProductContract.ProductEntry.CONTENT_URI, values);
 
-        Uri newUri = getContentResolver().insert(ProductContract.ProductEntry.CONTENT_URI,values);
+            if (newUri == null) {
+                // If the new content URI is null, then there was an error with insertion.
+                Toast.makeText(this, getString(R.string.editor_insert_product_failed),
+                        Toast.LENGTH_SHORT).show();
+            } else {
+                // Otherwise, the insertion was successful and we can display a toast.
+                Toast.makeText(this, getString(R.string.editor_insert_product_successful),
+                        Toast.LENGTH_SHORT).show();
+            }
+        }else {
+            int rowsAffected = getContentResolver().update(uri,values,null,null);
+            if (rowsAffected == 0) {
+                // If no rows were affected, then there was an error with the update.
+                Toast.makeText(this, getString(R.string.editor_update_product_failed),
+                        Toast.LENGTH_SHORT).show();
+            } else {
+                // Otherwise, the update was successful and we can display a toast.
+                Toast.makeText(this, getString(R.string.editor_update_product_successful),
+                        Toast.LENGTH_SHORT).show();
+            }
 
-        if (newUri == null) {
-            // If the new content URI is null, then there was an error with insertion.
-            Toast.makeText(this, getString(R.string.editor_insert_product_failed),
-                    Toast.LENGTH_SHORT).show();
-        } else {
-            // Otherwise, the insertion was successful and we can display a toast.
-            Toast.makeText(this, getString(R.string.editor_insert_product_successful),
-                    Toast.LENGTH_SHORT).show();
         }
     }
 
