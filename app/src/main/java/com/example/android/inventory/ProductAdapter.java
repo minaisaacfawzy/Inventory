@@ -1,5 +1,6 @@
 package com.example.android.inventory;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
@@ -10,6 +11,8 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
+
 import com.example.android.inventory.data.ProductContract.ProductEntry;
 
 import java.util.List;
@@ -42,7 +45,7 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductViewHolder> {
         cursor.moveToPosition(position);
         int id = 0;
         String currentName,currentPrice,currentCategory ;
-        int currentQuantity;
+        final int currentQuantity;
 
 
             int idColumnIndex = cursor.getColumnIndex(ProductEntry._ID);
@@ -50,12 +53,13 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductViewHolder> {
             int priceColumnIndex = cursor.getColumnIndex(ProductEntry.COLUMN_PRODUCT_PRICE);
             int quantityColumnIndex = cursor.getColumnIndex(ProductEntry.COLUMN_PRODUCT_QUANTITY);
             int categoryColumnIndex = cursor.getColumnIndex(ProductEntry.COLUMN_RRODUCT_CATEGORY);
-            Product currProduct;
+
 
              id = cursor.getInt(idColumnIndex);
              currentName = cursor.getString(nameColumnIndex);
              currentPrice = cursor.getString(priceColumnIndex);
              currentQuantity = cursor.getInt(quantityColumnIndex);
+
              currentCategory = cursor.getString(categoryColumnIndex);
 
             holder.setTagId(id);
@@ -65,7 +69,14 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductViewHolder> {
             holder.btnSell.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-
+                    int id = holder.getTagId();
+                    Uri uri = Uri.withAppendedPath(ProductEntry.CONTENT_URI,String.valueOf(id));
+                    ContentValues value = new ContentValues();
+                    value.put(ProductEntry.COLUMN_PRODUCT_QUANTITY,currentQuantity-1);
+                    if(currentQuantity > 0)
+                        context.getContentResolver().update(uri,value,null,null);
+                    else
+                        Toast.makeText(context,context.getResources().getString(R.string.cannot_sell),Toast.LENGTH_LONG).show();
 
                 }
             });
