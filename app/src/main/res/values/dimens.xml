@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <dimen name="sell_button_width">50dp</dimen>
+    <dimen name="image_width">150</dimen>
+    <dimen name="image_height">150</dimen>
 </resources>

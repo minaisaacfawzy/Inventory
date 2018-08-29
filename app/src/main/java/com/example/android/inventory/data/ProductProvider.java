@@ -6,6 +6,7 @@ import android.content.ContentValues;
 import android.content.UriMatcher;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -147,7 +148,7 @@ public class ProductProvider extends ContentProvider {
             throw new IllegalArgumentException("Product requires a name");
 
         String price = values.getAsString(ProductEntry.COLUMN_PRODUCT_PRICE);
-        if(name == null )
+        if(price == null )
             throw new IllegalArgumentException("Product requires a price");
 
         int quantity = values.getAsInteger(ProductEntry.COLUMN_PRODUCT_PRICE);
@@ -223,11 +224,6 @@ public class ProductProvider extends ContentProvider {
                 throw new IllegalArgumentException("Product quantity is not valid");
         }
 
-        if(values.containsKey(ProductEntry.COLUMN_PRODUCT_SUPPLIER)){
-            String supplier = values.getAsString(ProductEntry.COLUMN_PRODUCT_SUPPLIER);
-            if(supplier == null)
-                throw new IllegalArgumentException("Product supplier is not valid");
-        }
 
         if(values.size() == 0)
             return 0;

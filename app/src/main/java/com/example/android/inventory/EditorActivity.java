@@ -7,11 +7,14 @@ import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.CursorLoader;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.Loader;
 import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
-import android.nfc.Tag;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.support.annotation.Nullable;
 import android.support.v4.app.NavUtils;
 import android.support.v7.app.AppCompatActivity;
@@ -24,15 +27,19 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.Toast;
 
 import com.example.android.inventory.data.ProductContract;
 import com.example.android.inventory.data.ProductContract.ProductEntry;
 
+import java.io.ByteArrayOutputStream;
+
 
 public class EditorActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor> {
     private EditText etxtName,etxtPrice,etxtQuantity,etxtSupplier;
+    private ImageView imgProduct;
     private Spinner spinnerCategory;
     private String category;
     private static final String TAG = "EditorActivity";
@@ -55,7 +62,14 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
         etxtQuantity = (EditText) findViewById(R.id.etxt_quanitity);
         etxtSupplier = (EditText) findViewById(R.id.etxt_supplier);
         spinnerCategory = (Spinner) findViewById(R.id.spinner_category);
-
+        imgProduct = findViewById(R.id.img_product);
+        imgProduct.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                startActivityForResult(intent,0);
+            }
+        });
         etxtName.setOnTouchListener(mTouchListener);
         etxtQuantity.setOnTouchListener(mTouchListener);
         etxtPrice.setOnTouchListener(mTouchListener);
@@ -74,6 +88,15 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
         }
 
 
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if(data.getExtras() != null) {
+            Bitmap bitmap = (Bitmap) data.getExtras().get("data");
+            imgProduct.setImageBitmap(bitmap);
+        }
     }
 
     @Override
@@ -173,6 +196,12 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
         String price = etxtPrice.getText().toString().trim();
         String quantity = etxtQuantity.getText().toString().trim();
         String supplier = etxtSupplier.getText().toString().trim();
+        imgProduct.setDrawingCacheEnabled(true);
+        Bitmap pic = imgProduct.getDrawingCache(true);
+        byte[] picBytes  = null;
+        if(pic != null) {
+            picBytes = getBitmapAsByteArray(pic);
+        }
 
         if(uri == null && TextUtils.isEmpty(name)&& TextUtils.isEmpty(price)
                 && TextUtils.isEmpty(String.valueOf(quantity))&& TextUtils.isEmpty(supplier))
@@ -183,7 +212,9 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
         values.put(ProductContract.ProductEntry.COLUMN_PRODUCT_QUANTITY,Integer.parseInt(quantity));
         values.put(ProductContract.ProductEntry.COLUMN_RRODUCT_CATEGORY,category);
         values.put(ProductContract.ProductEntry.COLUMN_PRODUCT_SUPPLIER,supplier);
-        Log.i(TAG, "saveProduct: " + values.toString());
+        values.put(ProductEntry.COLUMN_RRODUCT_PICTURE, picBytes);
+
+
         if(uri == null) {
             Uri newUri = getContentResolver().insert(ProductContract.ProductEntry.CONTENT_URI, values);
 
@@ -220,7 +251,8 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
                 ProductEntry.COLUMN_PRODUCT_PRICE,
                 ProductEntry.COLUMN_PRODUCT_QUANTITY,
                 ProductEntry.COLUMN_RRODUCT_CATEGORY,
-                ProductEntry.COLUMN_PRODUCT_SUPPLIER
+                ProductEntry.COLUMN_PRODUCT_SUPPLIER,
+                ProductEntry.COLUMN_RRODUCT_PICTURE
         };
 
         return new CursorLoader(this,
@@ -235,6 +267,7 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
         String currentName,currentPrice,currentCategory,currentSupplier ;
+        byte[] picBytes;
         int currentQuantity,id;
 
         if(cursor.moveToFirst()) {
@@ -244,7 +277,7 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
             int quantityColumnIndex = cursor.getColumnIndex(ProductEntry.COLUMN_PRODUCT_QUANTITY);
             int categoryColumnIndex = cursor.getColumnIndex(ProductEntry.COLUMN_RRODUCT_CATEGORY);
             int supplierColumnIndex = cursor.getColumnIndex(ProductEntry.COLUMN_PRODUCT_SUPPLIER);
-
+            int picColumnIndex = cursor.getColumnIndex(ProductEntry.COLUMN_RRODUCT_PICTURE);
 
             id = cursor.getInt(idColumnIndex);
             currentName = cursor.getString(nameColumnIndex);
@@ -252,11 +285,16 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
             currentQuantity = cursor.getInt(quantityColumnIndex);
             currentCategory = cursor.getString(categoryColumnIndex);
             currentSupplier = cursor.getString(supplierColumnIndex);
+            picBytes = cursor.getBlob(picColumnIndex);
             Log.i(TAG, "populateData: " + id + " " + currentName + currentPrice + currentCategory + " " + currentSupplier);
 
             etxtName.setText(currentName);
             etxtPrice.setText(String.valueOf(currentPrice));
             etxtQuantity.setText(String.valueOf(currentQuantity));
+            if(picBytes != null) {
+                Bitmap pic = BitmapFactory.decodeByteArray(picBytes, 0, picBytes.length);
+                imgProduct.setImageBitmap(pic);
+            }
             int index = getCategoreyNum(currentCategory);
             if(index >= 0)
                 spinnerCategory.setSelection(index);
@@ -350,5 +388,11 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
             }
         }
         finish();
+    }
+
+    public static byte[] getBitmapAsByteArray(Bitmap bitmap) {
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.PNG, 0, outputStream);
+        return outputStream.toByteArray();
     }
 }
