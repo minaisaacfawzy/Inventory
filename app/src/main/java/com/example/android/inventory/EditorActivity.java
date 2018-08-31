@@ -18,6 +18,7 @@ import android.provider.MediaStore;
 import android.support.annotation.Nullable;
 import android.support.v4.app.NavUtils;
 import android.support.v7.app.AppCompatActivity;
+import android.text.InputType;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.Menu;
@@ -26,6 +27,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Spinner;
@@ -39,12 +41,14 @@ import java.io.ByteArrayOutputStream;
 
 public class EditorActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor> {
     private EditText etxtName,etxtPrice,etxtQuantity,etxtSupplier;
+    private Button btnIncreaseQuantity, btnDecreaseQuantity,btnDel,btnOrder;
     private ImageView imgProduct;
     private Spinner spinnerCategory;
     private String category;
     private static final String TAG = "EditorActivity";
     private static final int PET_LOADER = 0;
     private boolean productChanged = false;
+
     private View.OnTouchListener mTouchListener = new View.OnTouchListener() {
         @Override
         public boolean onTouch(View view, MotionEvent motionEvent) {
@@ -53,10 +57,19 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
         }
     };
     Uri uri;
+    int currentQuantity,mOrderQuantity;
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.editor_activity);
+        uri =  getIntent().getData();
+        if(uri == null){
+            this.setTitle(getResources().getString(R.string.editor_activity_title_add));
+            invalidateOptionsMenu();
+        }else {
+            this.setTitle(getResources().getString(R.string.editor_activity_title_edit));
+            getLoaderManager().initLoader(0,null,this);
+        }
         etxtName = (EditText) findViewById(R.id.etxt_name);
         etxtPrice = (EditText) findViewById(R.id.etxt_price);
         etxtQuantity = (EditText) findViewById(R.id.etxt_quanitity);
@@ -76,16 +89,42 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
         etxtSupplier.setOnTouchListener(mTouchListener);
         spinnerCategory.setOnTouchListener(mTouchListener);
 
+        btnDecreaseQuantity = findViewById(R.id.btn_editor_sub);
+        btnDecreaseQuantity.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showOrderQuantityDialog(false);
+            }
+        });
+
+        btnIncreaseQuantity = findViewById(R.id.btn_editor_add);
+        btnIncreaseQuantity.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showOrderQuantityDialog(true);
+            }
+        });
+
+        btnDel = findViewById(R.id.btn_editor_del);
+        btnDel.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showDeleteConfirmationDialog();
+            }
+        });
+        if(uri == null)
+            btnDel.setVisibility(View.GONE);
+
+        btnOrder = findViewById(R.id.btn_editor_order);
+        btnOrder.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+            }
+        });
+
         setupSpinner();
         //uri is null in case of adding new product
-        uri =  getIntent().getData();
-        if(uri == null){
-            this.setTitle(getResources().getString(R.string.editor_activity_title_add));
-            invalidateOptionsMenu();
-        }else {
-            this.setTitle(getResources().getString(R.string.editor_activity_title_edit));
-            getLoaderManager().initLoader(0,null,this);
-        }
 
 
     }
@@ -108,10 +147,7 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
         super.onPrepareOptionsMenu(menu);
-        if (uri == null) {
-            MenuItem menuItem = menu.findItem(R.id.action_delete);
-            menuItem.setVisible(false);
-        }
+//
         return true;
     }
 
@@ -144,8 +180,7 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
                 // Show a dialog that notifies the user they have unsaved changes
                 showUnsavedChangesDialog(discardButtonClickListener);
                 return true;
-            case R.id.action_delete:
-                showDeleteConfirmationDialog();
+
 
         }
         return super.onOptionsItemSelected(item);
@@ -268,7 +303,7 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
     public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
         String currentName,currentPrice,currentCategory,currentSupplier ;
         byte[] picBytes;
-        int currentQuantity,id;
+        int id;
 
         if(cursor.moveToFirst()) {
             int idColumnIndex = cursor.getColumnIndex(ProductEntry._ID);
@@ -369,6 +404,44 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
         });
         AlertDialog dialog = builder.create();
         dialog.show();
+    }
+
+    private void showOrderQuantityDialog(final boolean add){
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle(EditorActivity.this.getResources().getString(R.string.alert_dialog_order_quantity));
+
+         // Set up the input
+        final EditText input = new EditText(this);
+        // Specify the type of input expected; this, for example, sets the input as a password, and will mask the text
+        input.setInputType(InputType.TYPE_CLASS_NUMBER);
+        builder.setView(input);
+
+        // Set up the buttons
+        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                mOrderQuantity = Integer.parseInt(input.getText().toString());
+                ContentValues value = new ContentValues();
+                if(add) {
+                    value.put(ProductEntry.COLUMN_PRODUCT_QUANTITY, currentQuantity + mOrderQuantity);
+                    getContentResolver().update(uri, value, null, null);
+                }else {
+                    value.put(ProductEntry.COLUMN_PRODUCT_QUANTITY,currentQuantity-mOrderQuantity);
+                    if(currentQuantity - mOrderQuantity > 0)
+                        getContentResolver().update(uri,value,null,null);
+                    else
+                        Toast.makeText(EditorActivity.this,getResources().getString(R.string.cannot_sell),Toast.LENGTH_LONG).show();
+                }
+            }
+        });
+        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.cancel();
+            }
+        });
+
+        builder.show();
     }
 
     private void deleteProduct() {
