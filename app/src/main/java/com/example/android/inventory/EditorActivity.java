@@ -62,14 +62,6 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.editor_activity);
-        uri =  getIntent().getData();
-        if(uri == null){
-            this.setTitle(getResources().getString(R.string.editor_activity_title_add));
-            invalidateOptionsMenu();
-        }else {
-            this.setTitle(getResources().getString(R.string.editor_activity_title_edit));
-            getLoaderManager().initLoader(0,null,this);
-        }
         etxtName = (EditText) findViewById(R.id.etxt_name);
         etxtPrice = (EditText) findViewById(R.id.etxt_price);
         etxtQuantity = (EditText) findViewById(R.id.etxt_quanitity);
@@ -83,11 +75,6 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
                 startActivityForResult(intent,0);
             }
         });
-        etxtName.setOnTouchListener(mTouchListener);
-        etxtQuantity.setOnTouchListener(mTouchListener);
-        etxtPrice.setOnTouchListener(mTouchListener);
-        etxtSupplier.setOnTouchListener(mTouchListener);
-        spinnerCategory.setOnTouchListener(mTouchListener);
 
         btnDecreaseQuantity = findViewById(R.id.btn_editor_sub);
         btnDecreaseQuantity.setOnClickListener(new View.OnClickListener() {
@@ -124,6 +111,25 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
         });
 
         setupSpinner();
+        uri =  getIntent().getData();
+        if(uri == null){
+            this.setTitle(getResources().getString(R.string.editor_activity_title_add));
+            btnOrder.setVisibility(View.GONE);
+            btnDel.setVisibility(View.GONE);
+            btnOrder.setVisibility(View.GONE);
+            btnIncreaseQuantity.setVisibility(View.GONE);
+            btnDecreaseQuantity.setVisibility(View.GONE);
+            invalidateOptionsMenu();
+        }else {
+            this.setTitle(getResources().getString(R.string.editor_activity_title_edit));
+            getLoaderManager().initLoader(0,null,this);
+        }
+        etxtName.setOnTouchListener(mTouchListener);
+        etxtQuantity.setOnTouchListener(mTouchListener);
+        etxtPrice.setOnTouchListener(mTouchListener);
+        etxtSupplier.setOnTouchListener(mTouchListener);
+        spinnerCategory.setOnTouchListener(mTouchListener);
+
         //uri is null in case of adding new product
 
 

@@ -6,18 +6,21 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.support.annotation.NonNull;
+import android.support.constraint.ConstraintLayout;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.android.inventory.data.ProductContract.ProductEntry;
 
 import java.util.List;
 
-public class ProductAdapter extends RecyclerView.Adapter<ProductViewHolder> {
+public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductViewHolder> {
     Context context;
     Cursor cursor;
     private static final String TAG = "ProductAdapter";
@@ -25,6 +28,8 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductViewHolder> {
         this.context = context;
         this.cursor = products;
     }
+
+
 
     @NonNull
     @Override
@@ -105,5 +110,29 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductViewHolder> {
 
     public void swapCursor(Cursor cursor){
         this.cursor = cursor;
+    }
+
+    public class ProductViewHolder extends RecyclerView.ViewHolder {
+        ConstraintLayout parent;
+        TextView txtvName,txtvPrice,txtvQuantity;
+        Button btnSell;
+        int tagId;
+        public ProductViewHolder(View itemView) {
+            super(itemView);
+
+            parent = itemView.findViewById(R.id.recycler_item_parent);
+            txtvName = itemView.findViewById(R.id.txtv_product_name);
+            txtvPrice = itemView.findViewById(R.id.txtv_price);
+            txtvQuantity = itemView.findViewById(R.id.txtv_quantity);
+            btnSell = itemView.findViewById(R.id.btn_sell);
+        }
+
+        public int getTagId() {
+            return tagId;
+        }
+        //set an id for each view which is equivalent to the id in database
+        public void setTagId(int tagId) {
+            this.tagId = tagId;
+        }
     }
 }

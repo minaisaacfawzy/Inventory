@@ -32,6 +32,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     RecyclerView recyclerView;
     FloatingActionButton floatingActionButton;
     ProductAdapter productAdapter;
+    Cursor cursor = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,6 +41,9 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
         recyclerView = findViewById(R.id.recycler_view);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        recyclerView.setHasFixedSize(true);
+        productAdapter = new ProductAdapter(this,cursor);
+        recyclerView.setAdapter(productAdapter);
         getLoaderManager().initLoader(PRODUCT_LOADER,null,this);
 
 
@@ -98,8 +102,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
 
-            productAdapter = new ProductAdapter(this,data);
-            recyclerView.setAdapter(productAdapter);
+            productAdapter.swapCursor(data);
 
     }
 
